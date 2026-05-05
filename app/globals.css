@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --font-inter: var(--font-inter);
+  --font-space: var(--font-space-grotesk);
+
+  /* Minimalist Color Palette */
+  --accent: #4f46e5; /* Indigo-600 */
+  --accent-hover: #4338ca;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply transition-colors duration-300;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  --background: 210 40% 98%; /* Slate-50 */
+  --foreground: 222 47% 11%; /* Slate-900 */
+  --card: 0 0% 100%; /* White */
+  --border: 214 32% 91%; /* Slate-200 */
+  --muted: 215 16% 47%; /* Slate-500 */
+}
+
+.dark {
+  --background: 240 10% 4%; /* Zinc-950 */
+  --foreground: 0 0% 98%; /* Zinc-100 */
+  --card: 240 10% 6%; /* Zinc-900 */
+  --border: 240 5% 15%; /* Zinc-800 */
+  --muted: 240 5% 65%; /* Zinc-400 */
+}
+
+/* Minimalist Utilities */
+.glass-nav {
+  @apply sticky top-0 z-50 w-full backdrop-blur-md border-b bg-white/70 dark:bg-zinc-950/70 border-slate-200 dark:border-zinc-800;
+}
+
+.minimal-card {
+  @apply p-6 rounded-2xl border bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 transition-all hover:shadow-sm;
+}
+
+.btn-primary {
+  @apply px-5 py-2.5 rounded-xl font-medium transition-all bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-90;
+}
+
+.btn-secondary {
+  @apply px-5 py-2.5 rounded-xl font-medium transition-all border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800;
 }
