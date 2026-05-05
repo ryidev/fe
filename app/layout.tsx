@@ -21,10 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans bg-[hsl(var(--background))] text-[hsl(var(--foreground))] min-h-screen`}>
+      <body className={`${inter.variable} font-sans min-h-screen`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
-          {children}
+          <main>
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>
