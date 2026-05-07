@@ -116,7 +116,7 @@ export default function VotePage() {
 
       {/* WINNER BANNER: Background Putih Solid (Force) */}
       {isFinished && winnerCandidate && (
-        <section className="mb-16 p-6 md:p-8 rounded-3xl bg-white border-2 border-indigo-600 shadow-xl flex items-center justify-between gap-6 relative overflow-hidden">
+        <section className="mb-16 p-6 md:p-8 rounded-3xl bg-white border-2  shadow-xl flex items-center justify-between gap-6 relative overflow-hidden">
           <div className="absolute -top-6 -left-6 opacity-[0.03] text-indigo-900">
             <Trophy size={150} />
           </div>
