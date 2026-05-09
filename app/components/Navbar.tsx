@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from "next-themes";
 import { Sun, Moon, Wallet } from "lucide-react";
 import { ethers } from 'ethers';
+import { useToast } from './ToastProvider';
 
 export default function Navbar() {
+  const { showToast } = useToast();
   const [account, setAccount] = useState<string | null>(null);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -27,7 +29,7 @@ export default function Navbar() {
         console.error(err);
       }
     } else {
-      alert('Please install MetaMask!');
+      showToast('Please install MetaMask!', 'error');
     }
   };
 

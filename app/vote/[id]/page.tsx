@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import Navbar from '@/app/components/Navbar';
 import { getEvotingContract } from '@/lib/evotingContract';
+import { useToast } from '@/app/components/ToastProvider';
 import { CheckCircle2, TrendingUp, Info, Trophy, ShieldAlert, Fingerprint, Calendar, UserPlus, LogIn, X, AlertCircle } from "lucide-react";
 
 interface Candidate {
@@ -25,22 +26,6 @@ interface VotingSession {
   require_nik?: boolean;
 }
 
-// COMPONENT: TOAST NOTIFICATION (Improved Layout)
-const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error', onClose: () => void }) => (
-  <div className={`fixed top-24 right-4 md:right-8 z-[200] flex items-start gap-4 px-6 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right-8 duration-500 max-w-[90vw] md:max-w-md ${
-    type === 'success' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/30 dark:border-green-900' : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/30 dark:border-red-900'
-  }`}>
-    <div className="mt-1">
-      {type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{type === 'success' ? 'Transaction_Success' : 'Execution_Error'}</p>
-      <p className="text-xs font-bold leading-relaxed break-words">{message}</p>
-    </div>
-    <button onClick={onClose} className="mt-1 opacity-50 hover:opacity-100 transition-opacity"><X size={16} /></button>
-  </div>
-);
-
 export default function VotePage() {
   const { id } = useParams();
   const [session, setSession] = useState<VotingSession | null>(null);
@@ -49,26 +34,12 @@ export default function VotePage() {
   const [voting, setVoting] = useState(false);
   const [isVotingActive, setIsVotingActive] = useState(false);
   const [userWallet, setUserWallet] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [isVerified, setIsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [nik, setNik] = useState('');
   const [birthDate, setBirthDate] = useState('');
-
-  const showToast = (message: string, type: 'success' | 'error') => {
-    // CLEAN ERROR MESSAGE: Extract text inside quotes if it's a long blockchain error
-    let cleanMessage = message;
-    if (type === 'error') {
-      const match = message.match(/"([^"]+)"/);
-      if (match && match[1]) cleanMessage = match[1];
-      else if (message.includes('user rejected')) cleanMessage = "Transaction rejected by user.";
-      else if (message.length > 100) cleanMessage = "Blockchain execution reverted. Check your status.";
-    }
-
-    setToast({ message: cleanMessage, type });
-    setTimeout(() => setToast(null), 6000);
-  };
+  const { showToast } = useToast();
 
   async function checkVerification(wallet: string) {
     if (!wallet) return;
@@ -189,7 +160,6 @@ export default function VotePage() {
 
   return (
     <div className="max-w-6xl mx-auto pt-24 px-8 pb-32">
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
       <header className="mb-20 text-center">
         <div className="flex items-center justify-center gap-2 mb-6">

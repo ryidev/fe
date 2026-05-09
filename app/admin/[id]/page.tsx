@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getEvotingContract } from '@/lib/evotingContract';
+import { useToast } from '@/app/components/ToastProvider';
 import { addCandidateToSession, deleteCandidate, updateCandidate, uploadCandidateAvatar } from '@/app/supabase-candidates';
 import { ArrowLeft, UserPlus, Play, Square, Trophy, Trash2, Activity, CheckCircle2, Settings, X, Upload, Camera } from "lucide-react";
 
@@ -19,6 +20,7 @@ interface Candidate {
 export default function AdminForumPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
   const [session, setSession] = useState<any>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,9 +93,9 @@ export default function AdminForumPage() {
       const tx = await contract.statusVoting(!isVotingActive);
       await tx.wait();
       setIsVotingActive(!isVotingActive);
-      alert(`Status updated.`);
+      showToast(`Status updated.`, 'success');
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'error');
     } finally {
       setProcessing(false);
     }
@@ -120,9 +122,9 @@ export default function AdminForumPage() {
       setWinner(winnerAddr);
       setIsFinished(true);
       setIsVotingActive(false);
-      alert('Session successfully finalized.');
+      showToast('Session successfully finalized.', 'success');
     } catch (err: any) {
-      alert(`Finalization Error: ${err.message}`);
+      showToast(`Finalization Error: ${err.message}`, 'error');
     } finally {
       setProcessing(false);
     }
@@ -141,7 +143,7 @@ export default function AdminForumPage() {
       setNewName('');
       setNewWallet('');
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'error');
     } finally {
       setAdding(false);
     }
@@ -160,9 +162,9 @@ export default function AdminForumPage() {
       const updated = await updateCandidate(editingCandidate.id, { name: editName });
       setCandidates(candidates.map(c => c.id === updated.id ? { ...c, name: updated.name } : c));
       setEditingCandidate(null);
-      alert('Candidate updated successfully.');
+      showToast('Candidate updated successfully.', 'success');
     } catch (err: any) {
-      alert(`Update Error: ${err.message}`);
+      showToast(`Update Error: ${err.message}`, 'error');
     } finally {
       setUploading(false);
     }
@@ -176,9 +178,9 @@ export default function AdminForumPage() {
       const updated = await updateCandidate(editingCandidate.id, { image_url: url });
       setCandidates(candidates.map(c => c.id === updated.id ? { ...c, image_url: updated.image_url } : c));
       setEditingCandidate({ ...editingCandidate, image_url: url });
-      alert('Photo uploaded successfully.');
+      showToast('Photo uploaded successfully.', 'success');
     } catch (err: any) {
-      alert(`Upload Error: ${err.message}`);
+      showToast(`Upload Error: ${err.message}`, 'error');
     } finally {
       setUploading(false);
     }

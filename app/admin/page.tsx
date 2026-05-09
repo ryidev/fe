@@ -3,10 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getEvotingContract } from '@/lib/evotingContract';
+import { useToast } from '@/app/components/ToastProvider';
 import { Plus, Settings, Link as LinkIcon, Layers, ShieldCheck, Lock } from "lucide-react";
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [sessions, setSessions] = useState<any[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -65,7 +67,7 @@ export default function AdminDashboard() {
   const copyToClipboard = (id: number) => {
     const url = `${window.location.origin}/vote/${id}`;
     navigator.clipboard.writeText(url);
-    alert('Voting link copied!');
+    showToast('Voting link copied!', 'success');
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-widest">Verifying_Owner_Privileges...</div>;
