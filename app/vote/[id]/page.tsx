@@ -41,12 +41,36 @@ export default function VotePage() {
   const [birthDate, setBirthDate] = useState('');
   const { showToast } = useToast();
 
+  const calculateAge = (birthDateString: string) => {
+    if (!birthDateString) return 0;
+    const birth = new Date(birthDateString);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    if ((today.getMonth() - birth.getMonth()) < 0 || ((today.getMonth() - birth.getMonth()) === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
   async function checkVerification(wallet: string) {
     if (!wallet) return;
     setVerifying(true);
-    const { data } = await supabase.from('verified_voters').select('*').eq('wallet_address', wallet.toLowerCase()).single();
-    setIsVerified(!!data);
-    setVerifying(false);
+    try {
+      const { data } = await supabase.from('verified_voters').select('*').eq('wallet_address', wallet.toLowerCase()).single();
+      if (data) {
+        const age = calculateAge(data.birth_date);
+        if (age < 17) {
+          setIsVerified(false);
+          showToast("Age must be 17+ to participate.", 'error');
+        } else {
+          setIsVerified(true);
+        }
+      } else {
+        setIsVerified(false);
+      }
+    } catch (err) {
+      setIsVerified(false);
+    } finally {
+      setVerifying(false);
+    }
   }
 
   useEffect(() => {
@@ -114,10 +138,7 @@ export default function VotePage() {
     setVerifying(true);
     try {
       if (authMode === 'register') {
-        const birth = new Date(birthDate);
-        const today = new Date();
-        let age = today.getFullYear() - birth.getFullYear();
-        if ((today.getMonth() - birth.getMonth()) < 0 || ((today.getMonth() - birth.getMonth()) === 0 && today.getDate() < birth.getDate())) age--;
+        const age = calculateAge(birthDate);
         if (age < 17) throw new Error("Age must be 17+ to participate.");
 
         const { error } = await supabase.from('verified_voters').insert([{ nik, birth_date: birthDate, wallet_address: userWallet.toLowerCase(), full_name: "Verified Voter" }]);
@@ -126,6 +147,10 @@ export default function VotePage() {
       } else {
         const { data, error } = await supabase.from('verified_voters').select('*').eq('nik', nik).eq('wallet_address', userWallet.toLowerCase()).single();
         if (error || !data) throw new Error("NIK mismatch with wallet");
+
+        const age = calculateAge(data.birth_date);
+        if (age < 17) throw new Error("Age must be 17+ to participate.");
+
         showToast("Login successful", 'success');
       }
       setIsVerified(true);
