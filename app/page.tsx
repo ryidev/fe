@@ -34,7 +34,7 @@ export default function Home() {
     }
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center font-mono text-[10px] tracking-widest text-muted">BOOTING_SYSTEM...</div>;
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center font-mono text-[10px] tracking-widest text-muted">BOOTING SYSTEM...</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-8 relative overflow-hidden">
@@ -44,7 +44,7 @@ export default function Home() {
       <div className="max-w-2xl w-full text-center relative z-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/10 rounded-full mb-8">
           <ShieldCheck size={14} className="text-indigo-600" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted">Secured_by_Blockchain</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-muted">Secured by Blockchain</span>
         </div>
         
         <h1 className="text-7xl md:text-8xl font-black tracking-tighter text-foreground mb-8 uppercase italic leading-[0.8]">
@@ -57,7 +57,7 @@ export default function Home() {
 
         {isOwner ? (
           <div className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Admin_Access_Detected</p>
+            <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-4">Admin Access Detected</p>
             <a 
               href="/admin" 
               className="group flex items-center gap-4 bg-foreground text-background px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-indigo-500/20"
@@ -70,7 +70,7 @@ export default function Home() {
             <div className="w-12 h-12 bg-muted/10 rounded-xl flex items-center justify-center text-muted mb-4">
               <Lock size={20} />
             </div>
-            <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1">Public_Access_Limited</p>
+            <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-1">Public Access Limited</p>
             <p className="text-[10px] text-muted max-w-[250px] mx-auto">
               Please use the direct voting link provided by your administrator to participate.
             </p>

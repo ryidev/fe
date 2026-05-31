@@ -186,7 +186,7 @@ export default function AdminForumPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted font-mono text-xs tracking-widest">LOADING_TERMINAL...</div>;
+  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-muted font-mono text-xs tracking-widest">LOADING TERMINAL...</div>;
 
   const winnerName = candidates.find(
     c => c.wallet_address?.toLowerCase() === winner?.toLowerCase()
@@ -198,7 +198,7 @@ export default function AdminForumPage() {
       <div className="mb-12 border-b border-border pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <button onClick={() => router.push('/admin')} className="flex items-center gap-2 text-xs font-bold text-muted hover:text-foreground transition-colors mb-4">
-            <ArrowLeft size={14} /> SESSION_CONTROL
+            <ArrowLeft size={14} /> SESSION CONTROL
           </button>
           <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">{session?.title}</h1>
           <div className="flex items-center gap-3 mt-4">
@@ -232,9 +232,9 @@ export default function AdminForumPage() {
       {isFinished && (
         <div className="mb-12 p-8 rounded-3xl bg-white border-2 border-indigo-600 shadow-xl flex items-center justify-between">
           <div>
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2">👑 Winner_Identified</h2>
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2">👑 Winner Identified</h2>
             <p className="text-3xl font-black italic uppercase tracking-tighter leading-none text-slate-900">
-              {winnerName || 'WINNER_FOUND'}
+              {winnerName || 'WINNER FOUND'}
             </p>
             <p className="text-[10px] font-mono text-slate-400 mt-3 break-all">{winner}</p>
           </div>
@@ -248,7 +248,7 @@ export default function AdminForumPage() {
       {!isVotingActive && !isFinished && (
         <section className="minimal-card mb-12 p-8 border-dashed border-2">
           <h2 className="text-xs font-bold uppercase tracking-widest text-muted mb-8 flex items-center gap-2">
-            <UserPlus size={14} /> New_Candidate
+            <UserPlus size={14} /> New Candidate
           </h2>
           <form onSubmit={handleAddCandidate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1">
@@ -271,7 +271,7 @@ export default function AdminForumPage() {
               type="submit" disabled={adding}
               className="md:col-span-2 btn-primary py-4 uppercase tracking-[0.2em] text-[10px] font-black"
             >
-              {adding ? 'SYNCHING...' : 'REGISTER_KANDIDAT'}
+              {adding ? 'SYNCING...' : 'REGISTER KANDIDAT'}
             </button>
           </form>
         </section>
@@ -280,7 +280,7 @@ export default function AdminForumPage() {
       {/* ANALYTICS / AUDIT LOG */}
       <div className="space-y-6">
         <h2 className="text-xs font-bold uppercase tracking-widest text-muted flex items-center gap-2">
-          <Activity size={14} /> Audit_Log
+          <Activity size={14} /> Audit Log
         </h2>
         
         <div className="grid grid-cols-1 gap-3">
@@ -292,7 +292,7 @@ export default function AdminForumPage() {
                   {c.image_url ? (
                     <img src={c.image_url} className="w-full h-full object-cover" alt={c.name} />
                   ) : (
-                    <span className="text-xs font-bold text-muted uppercase tracking-tighter">No_IMG</span>
+                    <span className="text-xs font-bold text-muted uppercase tracking-tighter">No IMG</span>
                   )}
                 </div>
                 <div>
@@ -335,7 +335,7 @@ export default function AdminForumPage() {
                <X size={20} />
              </button>
 
-             <h2 className="text-xl font-black tracking-tight text-foreground mb-8">EDIT_CANDIDATE</h2>
+             <h2 className="text-xl font-black tracking-tight text-foreground mb-8">EDIT CANDIDATE</h2>
 
              <div className="flex flex-col items-center mb-8">
                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
@@ -351,12 +351,12 @@ export default function AdminForumPage() {
                    </div>
                 </div>
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-                <p className="text-[10px] font-bold text-muted uppercase mt-3 tracking-widest">Change_Profile_Photo</p>
+                <p className="text-[10px] font-bold text-muted uppercase mt-3 tracking-widest">Change Profile Photo</p>
              </div>
 
              <div className="space-y-6">
                 <div className="space-y-1">
-                   <label className="text-[10px] font-black uppercase text-muted ml-1">Candidate_Name</label>
+                   <label className="text-[10px] font-black uppercase text-muted ml-1">Candidate Name</label>
                    <input 
                      type="text" className="w-full bg-transparent border-b border-border py-2 px-1 text-lg outline-none focus:border-indigo-500 transition-all text-foreground"
                      value={editName} onChange={(e) => setEditName(e.target.value)}
@@ -367,7 +367,7 @@ export default function AdminForumPage() {
                   onClick={handleUpdateCandidate} disabled={uploading}
                   className="w-full btn-primary py-4 uppercase tracking-[0.2em] text-[10px] font-black mt-4"
                 >
-                  {uploading ? 'PROCESSING...' : 'SAVE_CHANGES'}
+                  {uploading ? 'PROCESSING...' : 'SAVE CHANGES'}
                 </button>
              </div>
           </div>

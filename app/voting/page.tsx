@@ -5,7 +5,7 @@ import AddCandidateForm from './AddCandidateForm';
 import AnimatedContainer from './AnimatedContainer';
 
 export default function VotingPage() {
-  const [candidates, setCandidates] = useState([]);
+  const [candidates, setCandidates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState('');

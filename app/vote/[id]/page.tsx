@@ -177,7 +177,7 @@ export default function VotePage() {
     finally { setVoting(false); }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-[0.3em]">Synching_Node...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-[0.3em]">Syncing Node...</div>;
 
   const isFinished = session?.status === 'finished';
   const winnerCandidate = candidates.find(c => c.wallet_address?.toLowerCase() === session?.winner_address?.toLowerCase());
@@ -189,10 +189,10 @@ export default function VotePage() {
       <header className="mb-20 text-center">
         <div className="flex items-center justify-center gap-2 mb-6">
           <div className={`w-2 h-2 rounded-full ${isFinished ? 'bg-muted' : isVotingActive ? 'bg-indigo-600 animate-pulse' : 'bg-red-500'}`} />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted">{isFinished ? 'Archived_Session' : isVotingActive ? 'Live_Voting' : 'Session_Paused'}</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted">{isFinished ? 'Archived Session' : isVotingActive ? 'Live Voting' : 'Session Paused'}</span>
         </div>
         <h1 className="text-6xl font-black tracking-tight text-foreground uppercase italic mb-4">{session?.title}</h1>
-        {session?.require_nik && <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 rounded-full mb-6"><ShieldAlert size={12} className="text-indigo-600" /><span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">NIK_Verification_Required</span></div>}
+        {session?.require_nik && <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 rounded-full mb-6"><ShieldAlert size={12} className="text-indigo-600" /><span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">NIK Verification Required</span></div>}
         <p className="text-muted max-w-xl mx-auto font-medium leading-relaxed">{session?.description}</p>
       </header>
 
@@ -205,21 +205,21 @@ export default function VotePage() {
               </div>
               <div className="flex flex-col items-center text-center mb-8">
                  <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6">{verifying ? <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : <Fingerprint size={32} />}</div>
-                 <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">{verifying ? 'VERIFYING...' : authMode === 'register' ? 'New_Registration' : 'Verify_Connection'}</h2>
+                 <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">{verifying ? 'VERIFYING...' : authMode === 'register' ? 'New Registration' : 'Verify Connection'}</h2>
                  <p className="text-xs text-muted mt-2">{authMode === 'register' ? 'Link your NIK to this wallet.' : 'Enter your NIK to verify linkage.'}</p>
               </div>
               <form onSubmit={handleAuth} className="space-y-6">
                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-muted uppercase ml-1">National_ID (NIK)</label>
+                    <label className="text-[10px] font-black text-muted uppercase ml-1">National ID (NIK)</label>
                     <input type="text" placeholder="16 Digit Number" maxLength={16} className="w-full bg-transparent border-b border-border py-3 px-1 text-lg outline-none focus:border-indigo-500 transition-all font-mono text-foreground" value={nik} onChange={(e) => setNik(e.target.value.replace(/\D/g, ''))} required />
                  </div>
                  {authMode === 'register' && (
                    <div className="space-y-1 animate-in fade-in duration-500">
-                      <label className="text-[10px] font-black text-muted uppercase ml-1">Birth_Date</label>
+                      <label className="text-[10px] font-black text-muted uppercase ml-1">Birth Date</label>
                       <input type="date" className="w-full bg-transparent border-b border-border py-3 px-1 text-lg outline-none focus:border-indigo-500 transition-all text-foreground" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
                    </div>
                  )}
-                 <button type="submit" disabled={verifying} className="w-full btn-primary py-4 mt-4 uppercase tracking-[0.2em] text-[10px] font-black shadow-xl">{verifying ? 'SINCING_NODE...' : authMode === 'register' ? 'REGISTER_&_LINK' : 'LOGIN_&_VERIFY'}</button>
+                 <button type="submit" disabled={verifying} className="w-full btn-primary py-4 mt-4 uppercase tracking-[0.2em] text-[10px] font-black shadow-xl">{verifying ? 'SYNCING NODE...' : authMode === 'register' ? 'REGISTER & LINK' : 'LOGIN & VERIFY'}</button>
               </form>
            </div>
         </section>
@@ -229,7 +229,7 @@ export default function VotePage() {
             <section className="mb-16 p-6 md:p-8 rounded-3xl bg-white border-2 border-indigo-600 shadow-xl flex items-center justify-between gap-6 relative overflow-hidden">
               <div className="absolute -top-6 -left-6 opacity-[0.03] text-indigo-900"><Trophy size={150} /></div>
               <div className="relative z-10 flex flex-col">
-                <div className="flex items-center gap-2 mb-2"><Trophy size={12} className="text-indigo-600" /><h2 className="text-[9px] font-black tracking-[0.4em] uppercase text-indigo-600">Official_Winner_Declared</h2></div>
+                <div className="flex items-center gap-2 mb-2"><Trophy size={12} className="text-indigo-600" /><h2 className="text-[9px] font-black tracking-[0.4em] uppercase text-indigo-600">Official Winner Declared</h2></div>
                 <div className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-slate-900 leading-none mb-2">{winnerCandidate.name}</div>
                 <p className="text-[9px] font-mono text-slate-500 break-all">{winnerCandidate.wallet_address}</p>
               </div>
@@ -248,13 +248,13 @@ export default function VotePage() {
                   <div className="mt-4">
                     <div className="flex justify-between items-start mb-10">
                       <div className="w-16 h-16 bg-muted/5 rounded-[1.25rem] overflow-hidden border border-border"><img src={candidate.image_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${candidate.name}`} className="w-full h-full object-cover" /></div>
-                      <div className="text-right"><div className="text-3xl font-black text-foreground tracking-tighter leading-none">{candidate.votes}</div><div className="text-[8px] font-black text-muted uppercase tracking-widest mt-1">Votes_Cast</div></div>
+                      <div className="text-right"><div className="text-3xl font-black text-foreground tracking-tighter leading-none">{candidate.votes}</div><div className="text-[8px] font-black text-muted uppercase tracking-widest mt-1">Votes Cast</div></div>
                     </div>
                     <h3 className="text-2xl font-bold text-foreground mb-1">{candidate.name}</h3>
                     <p className="text-[10px] font-mono text-muted tracking-tighter truncate opacity-80 mb-8 uppercase">{candidate.wallet_address?.substring(0, 18)}...</p>
                   </div>
                   <button onClick={() => handleVote(idx)} disabled={voting || !isVotingActive || isFinished} className={`w-full py-4 rounded-xl font-black tracking-[0.2em] text-[10px] transition-all ${isWinner ? 'bg-indigo-600 text-white' : 'bg-muted/10 text-foreground border border-border'} hover:bg-indigo-600 hover:text-white disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed`}>
-                    {isFinished ? 'SESSION_ARCHIVED' : voting ? 'CASTING...' : isVotingActive ? 'CAST_YOUR_VOTE' : 'PAUSED'}
+                    {isFinished ? 'SESSION ARCHIVED' : voting ? 'CASTING...' : isVotingActive ? 'CAST YOUR VOTE' : 'PAUSED'}
                   </button>
                 </div>
               );
@@ -263,8 +263,8 @@ export default function VotePage() {
         </>
       )}
       <footer className="mt-24 flex flex-col md:flex-row items-center justify-between gap-8 py-12 border-t border-border">
-        <div className="flex items-center gap-4 text-muted"><Info size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Powered_by_Ethereum_Network</span></div>
-        <div className="flex items-center gap-2 text-muted"><TrendingUp size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Real-time_analytics_active</span></div>
+        <div className="flex items-center gap-4 text-muted"><Info size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Powered by Ethereum Network</span></div>
+        <div className="flex items-center gap-2 text-muted"><TrendingUp size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Real-time analytics active</span></div>
       </footer>
     </div>
   );

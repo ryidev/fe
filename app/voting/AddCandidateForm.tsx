@@ -22,7 +22,7 @@ export default function AddCandidateForm({ onSuccess }: { onSuccess?: () => void
       await tx.wait();
       
       // 2. Simpan nama kandidat ke Supabase (session_id 0 sebagai default di halaman lama)
-      await addCandidateToSession(name, 0);
+      await addCandidateToSession(name, address, 0);
       
       setSuccess('Kandidat berhasil ditambahkan!');
       setName('');

@@ -70,7 +70,7 @@ export default function AdminDashboard() {
     showToast('Voting link copied!', 'success');
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-widest">Verifying_Owner_Privileges...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-widest">Verifying Owner Privileges...</div>;
 
   if (!isOwner) return null;
 
@@ -78,19 +78,19 @@ export default function AdminDashboard() {
     <div className="max-w-4xl mx-auto pt-24 px-8 pb-32">
       <div className="flex items-center justify-between mb-12">
         <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
-          <Lock size={28} className="text-indigo-600" /> ADMIN_DASHBOARD
+          <Lock size={28} className="text-indigo-600" /> ADMIN DASHBOARD
         </h1>
       </div>
       
       <section className="minimal-card mb-16 p-8 border-foreground border-2">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted mb-8 flex items-center gap-2"><Plus size={14} /> Initialize_New_Forum</h2>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-muted mb-8 flex items-center gap-2"><Plus size={14} /> Initialize New Forum</h2>
         <form onSubmit={createSession} className="space-y-6">
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-muted ml-1">Session_Title</label>
+            <label className="text-[10px] font-black uppercase text-muted ml-1">Session Title</label>
             <input type="text" placeholder="e.g. Presidential Election" className="w-full bg-transparent border-b border-border py-3 px-1 text-lg outline-none focus:border-indigo-500 transition-all text-foreground" value={title} onChange={(e) => setTitle(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black uppercase text-muted ml-1">Context_Description</label>
+            <label className="text-[10px] font-black uppercase text-muted ml-1">Context Description</label>
             <input placeholder="Describe purpose..." className="w-full bg-transparent border-b border-border py-3 px-1 text-sm outline-none focus:border-indigo-500 transition-all text-foreground" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div className="flex items-center justify-between p-4 bg-muted/5 rounded-2xl border border-border">
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
                 <div className="w-11 h-6 bg-muted/30 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
              </label>
           </div>
-          <button type="submit" className="w-full btn-primary py-4 mt-4 uppercase tracking-[0.2em] text-xs font-black">CREATE_VOTING_FORUM</button>
+          <button type="submit" className="w-full btn-primary py-4 mt-4 uppercase tracking-[0.2em] text-xs font-black">CREATE VOTING FORUM</button>
         </form>
       </section>
 

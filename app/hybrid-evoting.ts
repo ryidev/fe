@@ -2,13 +2,13 @@ import { getCandidatesBySession, addCandidateToSession } from './supabase-candid
 import { getEvotingContract } from '../lib/evotingContract';
 
 // Ambil kandidat dari Supabase
-export async function fetchCandidatesHybrid(sessionId: string) {
-  return await getCandidatesBySession(sessionId);
+export async function fetchCandidatesHybrid(sessionId: string = '0') {
+  return await getCandidatesBySession(Number(sessionId));
 }
 
 // 2. Simpan nama kandidat ke Supabase (gunakan dummy session_id atau sesuaikan)
 export async function addCandidate(name: string) {
-  await addCandidateToSession(name, 0);
+  await addCandidateToSession(name, '', 0);
 }
 
 // Voting ke smart contract

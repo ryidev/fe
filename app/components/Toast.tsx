@@ -18,7 +18,7 @@ const Toast = ({ message, type, onClose }: ToastProps) => (
       {type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{type === 'success' ? 'Transaction_Success' : 'Execution_Error'}</p>
+      <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{type === 'success' ? 'Transaction Success' : 'Execution Error'}</p>
       <p className="text-xs font-bold leading-relaxed break-words">{message}</p>
     </div>
     <button onClick={onClose} className="mt-1 opacity-50 hover:opacity-100 transition-opacity cursor-pointer"><X size={16} /></button>
