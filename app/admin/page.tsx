@@ -65,9 +65,10 @@ export default function AdminDashboard() {
   };
 
   const copyToClipboard = (id: number) => {
-    const url = `${window.location.origin}/vote/${id}`;
+    // Generate the App Deep Link instead of just the web link
+    const url = `votedecen://vote/${id}`;
     navigator.clipboard.writeText(url);
-    showToast('Voting link copied!', 'success');
+    showToast('App Voting Link copied!', 'success');
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-widest">Verifying Owner Privileges...</div>;
