@@ -13,6 +13,9 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [requireNik, setRequireNik] = useState(false);
+  const [enforceAge, setEnforceAge] = useState(true);
+  const [idLabel, setIdLabel] = useState('NIK');
+  const [idLength, setIdLength] = useState(16);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
 
@@ -53,7 +56,15 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase
         .from('voting_sessions')
-        .insert([{ title, description, status: 'active', require_nik: requireNik }])
+        .insert([{ 
+          title, 
+          description, 
+          status: 'active', 
+          require_nik: requireNik,
+          enforce_age: requireNik ? enforceAge : false,
+          id_label: requireNik ? idLabel : 'NIK',
+          id_length: requireNik ? Number(idLength) : 16
+        }])
         .select().single();
       
       if (error) throw error;
@@ -61,14 +72,17 @@ export default function AdminDashboard() {
       setTitle('');
       setDescription('');
       setRequireNik(false);
+      setEnforceAge(true);
+      setIdLabel('NIK');
+      setIdLength(16);
     } catch (err) { console.error(err); }
   };
 
   const copyToClipboard = (id: number) => {
-    // Generate the App Deep Link instead of just the web link
-    const url = `votedecen://vote/${id}`;
+    // Generate standard web URL (which can trigger deep linking on mobile)
+    const url = `${window.location.origin}/vote/${id}`;
     navigator.clipboard.writeText(url);
-    showToast('App Voting Link copied!', 'success');
+    showToast('Voting Web Link copied!', 'success');
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted font-mono text-[10px] uppercase tracking-widest">Verifying Owner Privileges...</div>;
@@ -97,13 +111,45 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between p-4 bg-muted/5 rounded-2xl border border-border">
              <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${requireNik ? 'bg-indigo-600 text-white' : 'bg-muted/20 text-muted'}`}><ShieldCheck size={18} /></div>
-                <div><p className="text-xs font-bold text-foreground">NIK Verification Gateway</p><p className="text-[10px] text-muted">Enforce age (17+) and ID validation.</p></div>
+                <div><p className="text-xs font-bold text-foreground">NIK / Custom ID Verification</p><p className="text-[10px] text-muted">Enforce age (17+) and custom ID validation.</p></div>
              </div>
              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={requireNik} onChange={(e) => setRequireNik(e.target.checked)} />
+                <input type="checkbox" className="sr-only peer" checked={requireNik} onChange={(e) => {
+                  setRequireNik(e.target.checked);
+                  if (e.target.checked) setEnforceAge(true);
+                }} />
                 <div className="w-11 h-6 bg-muted/30 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
              </label>
           </div>
+          {requireNik && (
+            <div className="space-y-6 p-4 bg-muted/5 rounded-2xl border border-border animate-in fade-in slide-in-from-top-4 duration-300">
+              {/* Enforce Age (17+) Switch */}
+              <div className="flex items-center justify-between pb-4 border-b border-border/50">
+                 <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${enforceAge ? 'bg-indigo-600 text-white' : 'bg-muted/20 text-muted'}`}><ShieldCheck size={18} /></div>
+                    <div>
+                       <p className="text-xs font-bold text-foreground">Enforce Age (17+)</p>
+                       <p className="text-[10px] text-muted">Restrict voting to users who are 17 years or older.</p>
+                    </div>
+                 </div>
+                 <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={enforceAge} onChange={(e) => setEnforceAge(e.target.checked)} />
+                    <div className="w-11 h-6 bg-muted/30 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                 </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-muted ml-1">Custom ID Label</label>
+                  <input type="text" placeholder="e.g. NIK, NIM, NIS, NISN" className="w-full bg-transparent border-b border-border py-2 px-1 text-sm outline-none focus:border-indigo-500 transition-all text-foreground" value={idLabel} onChange={(e) => setIdLabel(e.target.value)} required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-muted ml-1">Required ID Length (Digits)</label>
+                  <input type="number" min={1} max={50} className="w-full bg-transparent border-b border-border py-2 px-1 text-sm outline-none focus:border-indigo-500 transition-all text-foreground" value={idLength} onChange={(e) => setIdLength(Number(e.target.value))} required />
+                </div>
+              </div>
+            </div>
+          )}
           <button type="submit" className="w-full btn-primary py-4 mt-4 uppercase tracking-[0.2em] text-xs font-black">CREATE VOTING FORUM</button>
         </form>
       </section>

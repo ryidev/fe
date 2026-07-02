@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import Navbar from '@/app/components/Navbar';
 import { getEvotingContract } from '@/lib/evotingContract';
 import { useToast } from '@/app/components/ToastProvider';
-import { CheckCircle2, TrendingUp, Info, Trophy, ShieldAlert, Fingerprint, Calendar, UserPlus, LogIn, X, AlertCircle } from "lucide-react";
+import { CheckCircle2, TrendingUp, Info, Trophy, ShieldAlert, Fingerprint, Calendar, UserPlus, LogIn, X, AlertCircle, Smartphone } from "lucide-react";
 
 interface Candidate {
   id: number;
@@ -24,6 +24,9 @@ interface VotingSession {
   winner_address?: string;
   status?: string;
   require_nik?: boolean;
+  enforce_age?: boolean;
+  id_label?: string;
+  id_length?: number;
 }
 
 export default function VotePage() {
@@ -39,6 +42,7 @@ export default function VotePage() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [nik, setNik] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [showAppBanner, setShowAppBanner] = useState(true);
   const { showToast } = useToast();
 
   const calculateAge = (birthDateString: string) => {
@@ -50,19 +54,22 @@ export default function VotePage() {
     return age;
   };
 
-  async function checkVerification(wallet: string) {
+  async function checkVerification(wallet: string, currentSession?: VotingSession) {
     if (!wallet) return;
     setVerifying(true);
     try {
       const { data } = await supabase.from('verified_voters').select('*').eq('wallet_address', wallet.toLowerCase()).single();
       if (data) {
-        const age = calculateAge(data.birth_date);
-        if (age < 17) {
-          setIsVerified(false);
-          showToast("Age must be 17+ to participate.", 'error');
-        } else {
-          setIsVerified(true);
+        const sess = currentSession || session;
+        if (sess?.enforce_age) {
+          const age = calculateAge(data.birth_date);
+          if (age < 17) {
+            setIsVerified(false);
+            showToast("Age must be 17+ to participate.", 'error');
+            return;
+          }
         }
+        setIsVerified(true);
       } else {
         setIsVerified(false);
       }
@@ -109,18 +116,22 @@ export default function VotePage() {
       if (freshSession?.status === 'finished') updatedCandidates.sort((a, b) => b.votes - a.votes);
       setSession(freshSession);
       setCandidates(updatedCandidates);
-    } catch (e) { console.error(e); }
+      return freshSession;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
 
   useEffect(() => {
     async function init() {
-      await fetchBlockchainData();
+      const freshSession = await fetchBlockchainData();
       if (typeof window !== 'undefined' && (window as any).ethereum) {
         const accounts = await (window as any).ethereum.request({ method: 'eth_accounts' });
         if (accounts.length > 0) {
           const wallet = accounts[0].toLowerCase();
           setUserWallet(wallet);
-          await checkVerification(wallet);
+          await checkVerification(wallet, freshSession || undefined);
         }
       }
       setLoading(false);
@@ -130,26 +141,58 @@ export default function VotePage() {
     return () => clearInterval(interval);
   }, [id]);
 
+  const idLabel = session?.id_label || 'NIK';
+  const idLength = session?.id_length || 16;
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userWallet) return showToast("Connect wallet first", 'error');
-    if (nik.length !== 16) return showToast("NIK must be 16 digits", 'error');
+    if (nik.length !== idLength) return showToast(`${idLabel} must be ${idLength} digits`, 'error');
 
     setVerifying(true);
     try {
       if (authMode === 'register') {
-        const age = calculateAge(birthDate);
-        if (age < 17) throw new Error("Age must be 17+ to participate.");
+        // Pre-validation to avoid database constraint violations and provide clear error messages
+        const { data: existingNik } = await supabase
+          .from('verified_voters')
+          .select('nik')
+          .eq('nik', nik)
+          .maybeSingle();
+        if (existingNik) {
+          throw new Error(`This ${idLabel} is already registered.`);
+        }
 
-        const { error } = await supabase.from('verified_voters').insert([{ nik, birth_date: birthDate, wallet_address: userWallet.toLowerCase(), full_name: "Verified Voter" }]);
-        if (error) throw new Error(error.code === '23505' ? "Already registered" : error.message);
+        const { data: existingWallet } = await supabase
+          .from('verified_voters')
+          .select('wallet_address')
+          .eq('wallet_address', userWallet.toLowerCase())
+          .maybeSingle();
+        if (existingWallet) {
+          throw new Error("This wallet address is already linked to an identity. Please use the LOGIN tab instead.");
+        }
+
+        if (session?.enforce_age) {
+          const age = calculateAge(birthDate);
+          if (age < 17) throw new Error("Age must be 17+ to participate.");
+        }
+
+        const { error } = await supabase.from('verified_voters').insert([{ 
+          nik, 
+          birth_date: session?.enforce_age ? birthDate : "2000-01-01", 
+          wallet_address: userWallet.toLowerCase(), 
+          full_name: "Verified Voter" 
+        }]);
+        if (error) throw new Error(error.message);
         showToast("Registration successful", 'success');
       } else {
         const { data, error } = await supabase.from('verified_voters').select('*').eq('nik', nik).eq('wallet_address', userWallet.toLowerCase()).single();
-        if (error || !data) throw new Error("NIK mismatch with wallet");
+        if (error || !data) throw new Error(`${idLabel} mismatch with wallet`);
 
-        const age = calculateAge(data.birth_date);
-        if (age < 17) throw new Error("Age must be 17+ to participate.");
+        if (session?.enforce_age) {
+          if (!data.birth_date) throw new Error("Age verification is required, but birth date is not recorded for this identity");
+          const age = calculateAge(data.birth_date);
+          if (age < 17) throw new Error("Age must be 17+ to participate.");
+        }
 
         showToast("Login successful", 'success');
       }
@@ -185,6 +228,34 @@ export default function VotePage() {
 
   return (
     <div className="max-w-6xl mx-auto pt-24 px-8 pb-32">
+      {showAppBanner && (
+        <div className="mb-10 p-5 rounded-2xl bg-indigo-600/10 dark:bg-indigo-500/5 border border-indigo-500/20 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0">
+              <Smartphone size={24} />
+            </div>
+            <div className="text-left">
+              <h3 className="text-sm font-bold text-foreground">Buka di Aplikasi VoteDecen</h3>
+              <p className="text-[11px] text-muted mt-0.5">Dapatkan pengalaman memilih yang lebih aman, cepat, dan terintegrasi langsung dengan dompet MetaMask Anda di Android.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+            <button
+              onClick={() => setShowAppBanner(false)}
+              className="p-3 text-muted hover:text-foreground hover:bg-muted/10 rounded-xl transition-all"
+              aria-label="Dismiss"
+            >
+              <X size={16} />
+            </button>
+            <a
+              href={`votedecen://vote/${id}`}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 px-6 text-[10px] font-black uppercase tracking-wider shadow-lg shadow-indigo-600/20 text-center shrink-0 transition-all active:scale-[0.98]"
+            >
+              Buka Aplikasi
+            </a>
+          </div>
+        </div>
+      )}
       
       <header className="mb-20 text-center">
         <div className="flex items-center justify-center gap-2 mb-6">
@@ -192,7 +263,7 @@ export default function VotePage() {
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted">{isFinished ? 'Archived Session' : isVotingActive ? 'Live Voting' : 'Session Paused'}</span>
         </div>
         <h1 className="text-6xl font-black tracking-tight text-foreground uppercase italic mb-4">{session?.title}</h1>
-        {session?.require_nik && <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 rounded-full mb-6"><ShieldAlert size={12} className="text-indigo-600" /><span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">NIK Verification Required</span></div>}
+        {session?.require_nik && <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 rounded-full mb-6"><ShieldAlert size={12} className="text-indigo-600" /><span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">{idLabel} Verification Required</span></div>}
         <p className="text-muted max-w-xl mx-auto font-medium leading-relaxed">{session?.description}</p>
       </header>
 
@@ -206,14 +277,14 @@ export default function VotePage() {
               <div className="flex flex-col items-center text-center mb-8">
                  <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-6">{verifying ? <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : <Fingerprint size={32} />}</div>
                  <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">{verifying ? 'VERIFYING...' : authMode === 'register' ? 'New Registration' : 'Verify Connection'}</h2>
-                 <p className="text-xs text-muted mt-2">{authMode === 'register' ? 'Link your NIK to this wallet.' : 'Enter your NIK to verify linkage.'}</p>
+                 <p className="text-xs text-muted mt-2">{authMode === 'register' ? `Link your ${idLabel} to this wallet.` : `Enter your ${idLabel} to verify linkage.`}</p>
               </div>
               <form onSubmit={handleAuth} className="space-y-6">
                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-muted uppercase ml-1">National ID (NIK)</label>
-                    <input type="text" placeholder="16 Digit Number" maxLength={16} className="w-full bg-transparent border-b border-border py-3 px-1 text-lg outline-none focus:border-indigo-500 transition-all font-mono text-foreground" value={nik} onChange={(e) => setNik(e.target.value.replace(/\D/g, ''))} required />
+                    <label className="text-[10px] font-black text-muted uppercase ml-1">Identifier ({idLabel})</label>
+                    <input type="text" placeholder={`${idLength} Digit Number`} maxLength={idLength} className="w-full bg-transparent border-b border-border py-3 px-1 text-lg outline-none focus:border-indigo-500 transition-all font-mono text-foreground" value={nik} onChange={(e) => setNik(e.target.value.replace(/\D/g, '').slice(0, idLength))} required />
                  </div>
-                 {authMode === 'register' && (
+                 {authMode === 'register' && session?.enforce_age && (
                    <div className="space-y-1 animate-in fade-in duration-500">
                       <label className="text-[10px] font-black text-muted uppercase ml-1">Birth Date</label>
                       <input type="date" className="w-full bg-transparent border-b border-border py-3 px-1 text-lg outline-none focus:border-indigo-500 transition-all text-foreground" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
