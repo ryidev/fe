@@ -15,6 +15,7 @@ interface Candidate {
   image_url: string;
   session_id: number;
   votes: number;
+  blockchainIndex: number;
 }
 
 interface VotingSession {
@@ -43,6 +44,7 @@ export default function VotePage() {
   const [nik, setNik] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [showAppBanner, setShowAppBanner] = useState(true);
+  const [hasVoted, setHasVoted] = useState(false);
   const { showToast } = useToast();
 
   const calculateAge = (birthDateString: string) => {
@@ -80,6 +82,21 @@ export default function VotePage() {
     }
   }
 
+  async function checkUserVoted(wallet: string) {
+    if (!wallet) {
+      setHasVoted(false);
+      return;
+    }
+    try {
+      const contract = await getEvotingContract();
+      const voted = await contract.userSudahVoting(wallet);
+      setHasVoted(voted);
+    } catch (e) {
+      console.warn('Failed to check if user has voted', e);
+      setHasVoted(false);
+    }
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       const handleAccountsChanged = (accounts: string[]) => {
@@ -87,10 +104,12 @@ export default function VotePage() {
           const wallet = accounts[0].toLowerCase();
           setUserWallet(wallet);
           checkVerification(wallet);
+          checkUserVoted(wallet);
           showToast(`Account Switched`, 'success');
         } else {
           setUserWallet(null);
           setIsVerified(false);
+          setHasVoted(false);
         }
       };
       (window as any).ethereum.on('accountsChanged', handleAccountsChanged);
@@ -104,13 +123,46 @@ export default function VotePage() {
       const active = await contract.sudahBisaVoting();
       setIsVotingActive(active);
 
-      const { data: candData } = await supabase.from('candidates').select('*').eq('session_id', id);
-      const updatedCandidates = await Promise.all((candData || []).map(async (c: any, index: number) => {
+      let totalOnChain = 0;
+      try {
+        const total = await contract.totalKandidat();
+        totalOnChain = Number(total);
+      } catch (e) {
+        console.warn('Failed to fetch total candidates from blockchain', e);
+      }
+
+      const onChainMapping: { [address: string]: { index: number; votes: number } } = {};
+      for (let i = 0; i < totalOnChain; i++) {
         try {
-          const blockchainCand = await contract.kandidat(index);
-          return { ...c, votes: Number(blockchainCand.jumlahSuara) };
-        } catch (e) { return { ...c, votes: 0 }; }
-      }));
+          const blockchainCand = await contract.kandidat(i);
+          onChainMapping[blockchainCand.alamatKandidat.toLowerCase()] = {
+            index: i,
+            votes: Number(blockchainCand.jumlahSuara)
+          };
+        } catch (e) {
+          console.warn('Error fetching on-chain candidate at index', i, e);
+        }
+      }
+
+      if (userWallet) {
+        try {
+          const voted = await contract.userSudahVoting(userWallet);
+          setHasVoted(voted);
+        } catch (e) {
+          console.warn('Failed to refresh userSudahVoting status', e);
+        }
+      }
+
+      const { data: candData } = await supabase.from('candidates').select('*').eq('session_id', id);
+      const updatedCandidates = (candData || []).map((c: any) => {
+        const wallet = c.wallet_address?.toLowerCase();
+        const mapped = onChainMapping[wallet];
+        return {
+          ...c,
+          blockchainIndex: mapped ? mapped.index : -1,
+          votes: mapped ? mapped.votes : 0
+        };
+      });
 
       const { data: freshSession } = await supabase.from('voting_sessions').select('*').eq('id', id).single();
       if (freshSession?.status === 'finished') updatedCandidates.sort((a, b) => b.votes - a.votes);
@@ -132,6 +184,7 @@ export default function VotePage() {
           const wallet = accounts[0].toLowerCase();
           setUserWallet(wallet);
           await checkVerification(wallet, freshSession || undefined);
+          await checkUserVoted(wallet);
         }
       }
       setLoading(false);
@@ -211,6 +264,7 @@ export default function VotePage() {
       const tx = await contract.voting(index);
       await tx.wait();
       showToast('Vote cast successfully', 'success');
+      setHasVoted(true);
       await fetchBlockchainData();
     } catch (err: any) { 
       // Handle the complex blockchain error object
@@ -324,8 +378,12 @@ export default function VotePage() {
                     <h3 className="text-2xl font-bold text-foreground mb-1">{candidate.name}</h3>
                     <p className="text-[10px] font-mono text-muted tracking-tighter truncate opacity-80 mb-8 uppercase">{candidate.wallet_address?.substring(0, 18)}...</p>
                   </div>
-                  <button onClick={() => handleVote(idx)} disabled={voting || !isVotingActive || isFinished} className={`w-full py-4 rounded-xl font-black tracking-[0.2em] text-[10px] transition-all ${isWinner ? 'bg-indigo-600 text-white' : 'bg-muted/10 text-foreground border border-border'} hover:bg-indigo-600 hover:text-white disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed`}>
-                    {isFinished ? 'SESSION ARCHIVED' : voting ? 'CASTING...' : isVotingActive ? 'CAST YOUR VOTE' : 'PAUSED'}
+                   <button 
+                    onClick={() => handleVote(candidate.blockchainIndex)} 
+                    disabled={voting || !isVotingActive || isFinished || candidate.blockchainIndex === -1 || hasVoted} 
+                    className={`w-full py-4 rounded-xl font-black tracking-[0.2em] text-[10px] transition-all ${isWinner ? 'bg-indigo-600 text-white' : 'bg-muted/10 text-foreground border border-border'} hover:bg-indigo-600 hover:text-white disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed`}
+                  >
+                    {isFinished ? 'SESSION ARCHIVED' : voting ? 'CASTING...' : candidate.blockchainIndex === -1 ? 'NOT SYNCED ON-CHAIN' : hasVoted ? 'ANDA SUDAH MEMILIH' : isVotingActive ? 'CAST YOUR VOTE' : 'PAUSED'}
                   </button>
                 </div>
               );

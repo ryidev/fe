@@ -15,6 +15,7 @@ interface Candidate {
   image_url: string;
   session_id: number;
   votes?: number;
+  blockchainIndex?: number;
 }
 
 export default function AdminForumPage() {
@@ -45,15 +46,37 @@ export default function AdminForumPage() {
       const status = await contract.sudahBisaVoting();
       setIsVotingActive(status);
 
-      const { data: candData } = await supabase.from('candidates').select('*').eq('session_id', id);
-      const updatedCandidates = await Promise.all((candData || []).map(async (c: any, index: number) => {
+      let totalOnChain = 0;
+      try {
+        const total = await contract.totalKandidat();
+        totalOnChain = Number(total);
+      } catch (e) {
+        console.warn('Failed to fetch total candidates from blockchain', e);
+      }
+
+      const onChainMapping: { [address: string]: { index: number; votes: number } } = {};
+      for (let i = 0; i < totalOnChain; i++) {
         try {
-          const blockchainCand = await contract.kandidat(index);
-          return { ...c, votes: Number(blockchainCand.jumlahSuara) };
+          const blockchainCand = await contract.kandidat(i);
+          onChainMapping[blockchainCand.alamatKandidat.toLowerCase()] = {
+            index: i,
+            votes: Number(blockchainCand.jumlahSuara)
+          };
         } catch (e) {
-          return { ...c, votes: 0 };
+          console.warn('Error fetching on-chain candidate at index', i, e);
         }
-      }));
+      }
+
+      const { data: candData } = await supabase.from('candidates').select('*').eq('session_id', id);
+      const updatedCandidates = (candData || []).map((c: any) => {
+        const wallet = c.wallet_address?.toLowerCase();
+        const mapped = onChainMapping[wallet];
+        return {
+          ...c,
+          blockchainIndex: mapped ? mapped.index : -1,
+          votes: mapped ? mapped.votes : 0
+        };
+      });
       setCandidates(updatedCandidates);
     } catch (err) {
       console.error(err);

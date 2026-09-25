@@ -17,6 +17,16 @@ export default function Navbar() {
       (window as any).ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
         if (accounts.length > 0) setAccount(accounts[0]);
       });
+
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length > 0) setAccount(accounts[0]);
+        else setAccount(null);
+      };
+
+      (window as any).ethereum.on('accountsChanged', handleAccountsChanged);
+      return () => {
+        (window as any).ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      };
     }
   }, []);
 
